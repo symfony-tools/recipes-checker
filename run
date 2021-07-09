@@ -9,6 +9,7 @@ set_error_handler(function ($type, $message, $file, $line) {
 
 require __DIR__.'/vendor/autoload.php';
 
+use App\DiffRecipeVersionsCommand;
 use App\LintManifestsCommand;
 use App\LintPackagesCommand;
 use App\LintPullRequestCommand;
@@ -18,6 +19,7 @@ use Symfony\Component\Console\Application;
 
 $app = new Application();
 
+$app->add(new DiffRecipeVersionsCommand());
 $app->add(new LintManifestsCommand());
 $app->add(new LintPackagesCommand());
 $app->add(new LintPullRequestCommand());
