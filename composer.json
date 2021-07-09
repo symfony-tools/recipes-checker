@@ -1,0 +1,40 @@
+{
+    "name": "symfony-tools/recipes-checker",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fabien Potencier",
+            "email": "fabien@symfony.com"
+        },
+        {
+            "name": "Nicolas Grekas",
+            "email": "p@tchwork.com"
+        }
+    ],
+    "require": {
+        "php": ">=8",
+        "ext-ctype": "*",
+        "ext-intl": "*",
+        "ext-mbstring": "*",
+        "symfony/console": "^5.3",
+        "symfony/http-client": "^5.3",
+        "symfony/yaml": "^5.3"
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^5.3"
+    },
+    "replace": {
+        "symfony/polyfill-ctype": "*",
+        "symfony/polyfill-intl-grapheme": "*",
+        "symfony/polyfill-intl-normalizer": "*",
+        "symfony/polyfill-mbstring": "*",
+        "symfony/polyfill-php73": "*",
+        "symfony/polyfill-php80": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}

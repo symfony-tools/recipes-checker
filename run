@@ -1,0 +1,27 @@
+#!/usr/bin/env php
+<?php
+
+set_error_handler(function ($type, $message, $file, $line) {
+    if (error_reporting() & $type) {
+        throw new ErrorException($message, 0, $type, $file, $line);
+    }
+});
+
+require __DIR__.'/vendor/autoload.php';
+
+use App\LintManifestsCommand;
+use App\LintPackagesCommand;
+use App\LintPullRequestCommand;
+use App\LintYamlCommand;
+use App\ListUnpatchedPackagesCommand;
+use Symfony\Component\Console\Application;
+
+$app = new Application();
+
+$app->add(new LintManifestsCommand());
+$app->add(new LintPackagesCommand());
+$app->add(new LintPullRequestCommand());
+$app->add(new LintYamlCommand());
+$app->add(new ListUnpatchedPackagesCommand());
+
+$app->run();
