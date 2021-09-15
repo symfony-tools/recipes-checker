@@ -71,7 +71,7 @@ class LintManifestsCommand extends Command
                 $exit = 1;
             } else {
                 foreach ($data['aliases'] as $alias) {
-                    if (\in_array($aliases, ['lock', 'nothing', 'mirrors'], true)) {
+                    if (\in_array($aliases, ['lock', 'nothing', 'mirrors', ''], true)) {
                         $output->writeln(sprintf('::error file=%s::Alias "%s" cannot be used as it\'s a special alias used by Composer', $manifest, $alias));
                         $exit = 1;
                     }
