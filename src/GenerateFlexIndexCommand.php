@@ -14,6 +14,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\HttpClient\HttpClient;
 
 #[AsCommand(name: 'generate:flex-index', description: 'Generates the index.json required by Flex')]
 class GenerateFlexIndexCommand extends Command
@@ -65,15 +66,17 @@ class GenerateFlexIndexCommand extends Command
 
         $repository = $input->getArgument('repository');
         $branchPrefix = $input->getArgument('branch_prefix');
+        $contrib = $input->getOption('contrib');
 
         $output->writeln(json_encode([
             'aliases' => $aliases,
             'recipes' => $recipes,
+            'versions' => $contrib ? [] : HttpClient::create()->request('GET', 'https://flex.symfony.com/versions.json')->toArray(),
             'git-url' => sprintf('https://github.com/%s.git', $repository),
             'branch-prefix' => $branchPrefix,
             'tree-template' => sprintf('https://github.com/%s/tree/{tree}/{package}/{version}', $repository),
             'dist-template' => sprintf('https://codeload.github.com/%s/zip/refs/heads/%s/{package}', $repository, $branchPrefix),
-            'is-contrib' => $input->getOption('contrib'),
+            'is-contrib' => $contrib,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
         return 0;
