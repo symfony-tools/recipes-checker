@@ -1,13 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-set_error_handler(function ($type, $message, $file, $line) {
-    if (error_reporting() & $type) {
-        throw new ErrorException($message, 0, $type, $file, $line);
-    }
-});
-
-require __DIR__.'/vendor/autoload.php';
+require __DIR__.'/vendor/autoload_runtime.php';
 
 use App\DiffRecipeVersionsCommand;
 use App\LintManifestsCommand;
@@ -17,13 +11,15 @@ use App\LintYamlCommand;
 use App\ListUnpatchedPackagesCommand;
 use Symfony\Component\Console\Application;
 
-$app = new Application();
+return function() {
+    $app = new Application();
 
-$app->add(new DiffRecipeVersionsCommand());
-$app->add(new LintManifestsCommand());
-$app->add(new LintPackagesCommand());
-$app->add(new LintPullRequestCommand());
-$app->add(new LintYamlCommand());
-$app->add(new ListUnpatchedPackagesCommand());
+    $app->add(new DiffRecipeVersionsCommand());
+    $app->add(new LintManifestsCommand());
+    $app->add(new LintPackagesCommand());
+    $app->add(new LintPullRequestCommand());
+    $app->add(new LintYamlCommand());
+    $app->add(new ListUnpatchedPackagesCommand());
 
-$app->run();
+    return $app;
+};
