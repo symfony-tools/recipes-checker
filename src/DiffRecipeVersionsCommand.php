@@ -55,7 +55,7 @@ EOMD;
 
         $head = <<<EOMD
 Thanks for the PR 😍
-{$endpoint}
+
 ## Diff between recipe versions
 
 In order to help with the review stage, I'm in charge of computing the diff between the various versions of patched recipes.
