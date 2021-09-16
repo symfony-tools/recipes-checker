@@ -11,18 +11,52 @@ namespace App;
 
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(name: 'diff-recipe-versions', description: 'Displays the diff between versions of a recipe')]
 class DiffRecipeVersionsCommand extends Command
 {
+    protected function configure(): void
+    {
+        $this
+            ->addArgument('endpoint', InputArgument::OPTIONAL, 'The Flex endpoint', '')
+        ;
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $head = <<<EOMD
-## Diff between recipe versions
+        if ($endpoint = $input->getArgument('endpoint')) {
+            $endpoint = <<<EOMD
 
+## How to test these changes in your application
+
+ 1. Define the `SYMFONY_ENDPOINT` environment variable:
+    ```sh
+    # On *nix and Mac
+    export SYMFONY_ENDPOINT={$endpoint}
+    # On Windows
+    SET SYMFONY_ENDPOINT={$endpoint}
+    ```
+
+ 2. Install the package(s) related to this recipe using `composer require`
+
+ 3. Don't forget to unset the `SYMFONY_ENDPOINT` environment variable when done:
+    ```sh
+    # On *nix and Mac
+    unset SYMFONY_ENDPOINT
+    # On Windows
+    SET SYMFONY_ENDPOINT=
+    ```
+
+EOMD;
+        }
+
+        $head = <<<EOMD
 Thanks for the PR 😍
+{$endpoint}
+## Diff between recipe versions
 
 In order to help with the review stage, I'm in charge of computing the diff between the various versions of patched recipes.
 I'm going keep this comment up to date with any updates of the attached patch.
