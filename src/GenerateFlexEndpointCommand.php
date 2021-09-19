@@ -127,7 +127,6 @@ class GenerateFlexEndpointCommand extends Command
                     'manifest' => $manifest,
                     'files' => $files,
                     'origin' => sprintf('%s:%s@github.com/%s:%s', $package, $version, $repository, $sourceBranch),
-                    'not_installable' => false,
                     'is_contrib' => $contrib,
                 ],
             ],
