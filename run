@@ -5,7 +5,6 @@ require __DIR__.'/vendor/autoload_runtime.php';
 
 use App\DiffRecipeVersionsCommand;
 use App\GenerateFlexEndpointCommand;
-use App\GenerateFlexIndexCommand;
 use App\LintManifestsCommand;
 use App\LintPackagesCommand;
 use App\LintPullRequestCommand;
@@ -18,7 +17,6 @@ return function() {
 
     $app->add(new DiffRecipeVersionsCommand());
     $app->add(new GenerateFlexEndpointCommand());
-    $app->add(new GenerateFlexIndexCommand());
     $app->add(new LintManifestsCommand());
     $app->add(new LintPackagesCommand());
     $app->add(new LintPullRequestCommand());
