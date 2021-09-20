@@ -93,11 +93,15 @@ class LintManifestsCommand extends Command
             }
 
             foreach (scandir("$package/$version") as $file) {
+                $path = "$package/$version/$file";
+
                 if (\in_array($file, self::SPECIAL_FILES, true)) {
+                    if (is_file($path) && !preg_match('//u', file_get_contents($path))) {
+                        $output->writeln(sprintf('::error file=%s::File "%s" must be UTF-8 encoded', $path, $file));
+                        $exit = 1;
+                    }
                     continue;
                 }
-
-                $path = "$package/$version/$file";
 
                 if (is_dir($path)) {
                     if (isset($data['copy-from-recipe'][$file.'/'])) {

@@ -95,7 +95,15 @@ class GenerateFlexEndpointCommand extends Command
 
         foreach (new \RecursiveIteratorIterator($it) as $path => $file) {
             $file = substr($path, 1 + \strlen($package.'/'.$version));
-            if (is_dir($path) || \in_array($file, ['manifest.json', 'post-install.txt', 'Makefile'], true)) {
+            if (is_dir($path) || 'manifest.json' === $file) {
+                continue;
+            }
+            if ('post-install.txt' === $file) {
+                $manifest['post-install-output'] = explode("\n", rtrim(str_replace("\r", '', file_get_contents($path)), "\n"));
+                continue;
+            }
+            if ('Makefile' === $file) {
+                $manifest['makefile'] = explode("\n", rtrim(str_replace("\r", '', file_get_contents($path)), "\n"));
                 continue;
             }
             $contents = file_get_contents($path);
