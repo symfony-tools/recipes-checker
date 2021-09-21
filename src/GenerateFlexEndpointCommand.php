@@ -80,7 +80,7 @@ class GenerateFlexEndpointCommand extends Command
             'versions' => $contrib ? [] : HttpClient::create()->request('GET', 'https://flex.symfony.com/versions.json')->toArray(),
             'git_url' => sprintf('https://github.com/%s.git', $repository),
             'tree_template' => sprintf('https://github.com/%s/tree/{tree}/{package}/{version}', $repository),
-            'recipe_template' => sprintf('https://raw.githubusercontent.com/%s/%s/{package_dotted}.{version}.json', $repository, $flexBranch),
+            'recipe_template' => sprintf('https://api.github.com/repos/%s/contents/{package_dotted}.{version}.json?ref=%s', $repository, $flexBranch),
             'is_contrib' => $contrib,
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
