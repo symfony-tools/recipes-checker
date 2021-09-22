@@ -54,7 +54,7 @@ class GenerateFlexEndpointCommand extends Command
             $version = substr($package, 1 + strrpos($package, '/'));
             $package = substr($package, 0, -1 - \strlen($version));
 
-            $this->generatePackageJson($repository, $sourceBranch, $contrib, $package, $version, $manifest, $tree, $outputDir);
+            $this->generatePackageJson($package, $version, $manifest, $tree, $outputDir);
 
             foreach ($manifest['aliases'] ?? [] as $alias) {
                 $aliases[$alias] = $package;
@@ -78,16 +78,19 @@ class GenerateFlexEndpointCommand extends Command
             'aliases' => $aliases,
             'recipes' => $recipes,
             'versions' => $contrib ? [] : HttpClient::create()->request('GET', 'https://flex.symfony.com/versions.json')->toArray(),
-            'git_url' => sprintf('https://github.com/%s.git', $repository),
-            'tree_template' => sprintf('https://github.com/%s/tree/{tree}/{package}/{version}', $repository),
-            'recipe_template' => sprintf('https://api.github.com/repos/%s/contents/{package_dotted}.{version}.json?ref=%s', $repository, $flexBranch),
+            'branch' => $sourceBranch,
             'is_contrib' => $contrib,
+            '_links' => [
+                'repository' => sprintf('github.com/%s', $repository),
+                'origin_template' => sprintf('{package}:{version}@github.com/%s:%s', $repository, $sourceBranch),
+                'recipe_template' => sprintf('https://api.github.com/repos/%s/contents/{package_dotted}.{version}.json?ref=%s', $repository, $flexBranch),
+            ],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
         return 0;
     }
 
-    private function generatePackageJson(string $repository, string $sourceBranch, bool $contrib, string $package, string $version, array $manifest, string $tree, string $outputDir)
+    private function generatePackageJson(string $package, string $version, array $manifest, string $tree, string $outputDir)
     {
         $files = [];
         $it = new \RecursiveDirectoryIterator($package.'/'.$version);
@@ -107,35 +110,18 @@ class GenerateFlexEndpointCommand extends Command
                 continue;
             }
             $contents = file_get_contents($path);
-            $isUtf8 = preg_match('//u', $contents);
             $files[$file] = [
-                'contents' => $isUtf8 ? $contents : base64_encode($contents),
+                'contents' => preg_match('//u', $contents) ? explode("\n", $contents) : base64_encode($contents),
                 'executable' => is_executable($path),
-                'encoding' => $isUtf8 ? '' : 'base64',
             ];
         }
 
         file_put_contents(sprintf('%s/%s.%s.json', $outputDir, str_replace('/', '.', $package), $version), json_encode([
-            'locks' => [
-                $package => [
-                    'version' => $version,
-                    'recipe' => [
-                        'repo' => $version,
-                        'branch' => $sourceBranch,
-                        'version' => $version,
-                        'ref' => $tree,
-                    ],
-                ],
-            ],
             'manifests' => [
                 $package => [
-                    'repository' => sprintf('github.com/%s', $repository),
-                    'package' => $package,
-                    'version' => $version,
                     'manifest' => $manifest,
                     'files' => $files,
-                    'origin' => sprintf('%s:%s@github.com/%s:%s', $package, $version, $repository, $sourceBranch),
-                    'is_contrib' => $contrib,
+                    'ref' => $tree,
                 ],
             ],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
