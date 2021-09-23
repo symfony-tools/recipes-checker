@@ -66,8 +66,6 @@ class GenerateFlexEndpointCommand extends Command
             $version = substr($package, 1 + strrpos($package, '/'));
             $package = substr($package, 0, -1 - \strlen($version));
 
-            $this->generatePackageJson($package, $version, $manifest, $tree, $outputDir);
-
             foreach ($manifest['aliases'] ?? [] as $alias) {
                 $aliases[$alias] = $package;
                 $aliases[str_replace('-', '', $alias)] = $package;
@@ -79,8 +77,10 @@ class GenerateFlexEndpointCommand extends Command
                 $aliases[str_replace('-', '', $alias)] = $package;
             }
 
-            $recipes[$package][] = $version;
-            usort($recipes[$package], 'strnatcmp');
+            if ($this->generatePackageJson($package, $version, $manifest, $tree, $outputDir)) {
+                $recipes[$package][] = $version;
+                usort($recipes[$package], 'strnatcmp');
+            }
         }
 
         uksort($aliases, 'strnatcmp');
@@ -102,8 +102,10 @@ class GenerateFlexEndpointCommand extends Command
         return 0;
     }
 
-    private function generatePackageJson(string $package, string $version, array $manifest, string $tree, string $outputDir)
+    private function generatePackageJson(string $package, string $version, array $manifest, string $tree, string $outputDir): bool
     {
+        unset($manifest['aliases']);
+
         $files = [];
         $it = new \RecursiveDirectoryIterator($package.'/'.$version);
         $it->setFlags($it::SKIP_DOTS | $it::FOLLOW_SYMLINKS);
@@ -128,6 +130,10 @@ class GenerateFlexEndpointCommand extends Command
             ];
         }
 
+        if (!$manifest) {
+            return false;
+        }
+
         file_put_contents(sprintf('%s/%s.%s.json', $outputDir, str_replace('/', '.', $package), $version), json_encode([
             'manifests' => [
                 $package => [
@@ -137,5 +143,7 @@ class GenerateFlexEndpointCommand extends Command
                 ],
             ],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
+
+        return true;
     }
 }
