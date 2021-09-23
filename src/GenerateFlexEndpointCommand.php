@@ -85,7 +85,7 @@ class GenerateFlexEndpointCommand extends Command
                 'origin_template' => sprintf('{package}:{version}@github.com/%s:%s', $repository, $sourceBranch),
                 'recipe_template' => sprintf('https://api.github.com/repos/%s/contents/{package_dotted}.{version}.json?ref=%s', $repository, $flexBranch),
             ],
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
 
         return 0;
     }
@@ -124,6 +124,6 @@ class GenerateFlexEndpointCommand extends Command
                     'ref' => $tree,
                 ],
             ],
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
     }
 }

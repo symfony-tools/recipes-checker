@@ -27,7 +27,26 @@ class DiffRecipeVersionsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $packages = [];
+        $requires = [];
+
+        while (false !== $package = fgets(STDIN)) {
+            $package = substr($package, 0, -1);
+
+            $versions = scandir($package, SCANDIR_SORT_NONE);
+            usort($versions, 'version_compare');
+
+            if (!$versions = array_slice($versions, 2)) {
+                continue;
+            }
+
+            $packages[$package] = $versions;
+
+            $requires[] = escapeshellarg($package.':^'.array_pop($versions));
+        }
+
         if ($endpoint = $input->getArgument('endpoint')) {
+            $requires = implode(' ', $requires);
             $endpoint = <<<EOMD
 
 ## How to test these changes in your application
@@ -40,7 +59,11 @@ class DiffRecipeVersionsCommand extends Command
     SET SYMFONY_ENDPOINT={$endpoint}
     ```
 
- 2. Install the package(s) related to this recipe using `composer require`
+ 2. Install the package(s) related to this recipe:
+    ```sh
+    composer req 'symfony/flex:^1.16'
+    composer req {$requires}
+    ```
 
  3. Don't forget to unset the `SYMFONY_ENDPOINT` environment variable when done:
     ```sh
@@ -55,7 +78,7 @@ EOMD;
 
         $head = <<<EOMD
 Thanks for the PR 😍
-
+{$endpoint}
 ## Diff between recipe versions
 
 In order to help with the review stage, I'm in charge of computing the diff between the various versions of patched recipes.
@@ -63,12 +86,7 @@ I'm going keep this comment up to date with any updates of the attached patch.
 
 EOMD;
 
-        while (false !== $package = fgets(STDIN)) {
-            $package = substr($package, 0, -1);
-
-            $versions = scandir($package,  SCANDIR_SORT_NONE);
-            usort($versions, 'version_compare');
-            $versions = array_slice($versions, 2);
+        foreach ($packages as $package => $versions) {
             $previousVersion = array_shift($versions);
 
             if (!$versions) {
