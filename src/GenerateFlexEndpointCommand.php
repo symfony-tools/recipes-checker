@@ -42,6 +42,7 @@ class GenerateFlexEndpointCommand extends Command
 
         if (!$contrib) {
             $versions = HttpClient::create()->request('GET', 'https://flex.symfony.com/versions.json')->toArray();
+            unset($versions['warning']);
 
             foreach ($versions['splits'] as $package => $v) {
                 if (0 === strpos($package, 'symfony/') && '-pack' !== substr($package, -5)) {
