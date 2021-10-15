@@ -26,6 +26,7 @@ class GenerateFlexEndpointCommand extends Command
             ->addArgument('source_branch', InputArgument::REQUIRED, 'The source branch of recipes')
             ->addArgument('flex_branch', InputArgument::REQUIRED, 'The branch of the target Flex endpoint')
             ->addArgument('output_directory', InputArgument::REQUIRED, 'The directory where generated files should be stored')
+            ->addArgument('versions_json', InputArgument::OPTIONAL, 'The file where versions of Symfony are described')
             ->addOption('contrib')
         ;
     }
@@ -36,13 +37,13 @@ class GenerateFlexEndpointCommand extends Command
         $sourceBranch = $input->getArgument('source_branch');
         $flexBranch = $input->getArgument('flex_branch');
         $outputDir = $input->getArgument('output_directory');
+        $versionsJson = $input->getArgument('versions_json');
         $contrib = $input->getOption('contrib');
 
-        $aliases = $recipes = [];
+        $aliases = $recipes = $versions = [];
 
-        if (!$contrib) {
-            $versions = HttpClient::create()->request('GET', 'https://flex.symfony.com/versions.json')->toArray();
-            unset($versions['warning']);
+        if ($versionsJson) {
+            $versions = json_decode(file_get_contents($versionsJson), true);
 
             foreach ($versions['splits'] as $package => $v) {
                 if (0 === strpos($package, 'symfony/') && '-pack' !== substr($package, -5)) {
@@ -90,7 +91,7 @@ class GenerateFlexEndpointCommand extends Command
         file_put_contents($outputDir.'/index.json', json_encode([
             'aliases' => $aliases,
             'recipes' => $recipes,
-            'versions' => $contrib ? [] : $versions,
+            'versions' => $versions,
             'branch' => $sourceBranch,
             'is_contrib' => $contrib,
             '_links' => [
