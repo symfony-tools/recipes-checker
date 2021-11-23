@@ -85,8 +85,8 @@ class GenerateFlexEndpointCommand extends Command
             }
         }
 
-        uksort($aliases, 'strnatcmp');
-        uksort($recipes, 'strnatcmp');
+        ksort($aliases, \SORT_NATURAL);
+        ksort($recipes, \SORT_NATURAL);
 
         file_put_contents($outputDir.'/index.json', json_encode([
             'aliases' => $aliases,
@@ -135,6 +135,8 @@ class GenerateFlexEndpointCommand extends Command
         if (!$manifest) {
             return false;
         }
+
+        ksort($files, \SORT_NATURAL);
 
         file_put_contents(sprintf('%s/%s.%s.json', $outputDir, str_replace('/', '.', $package), $version), json_encode([
             'manifests' => [
