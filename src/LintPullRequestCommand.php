@@ -13,6 +13,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpClient\HttpClient;
 
@@ -24,6 +25,7 @@ class LintPullRequestCommand extends Command
         $this
             ->addArgument('event_path', InputArgument::REQUIRED, 'The path where the GitHub event is stored')
             ->addArgument('github_token', InputArgument::REQUIRED, 'The GitHub API token to use')
+            ->addOption('license', null, InputOption::VALUE_REQUIRED, 'The license to be check in PR body')
         ;
     }
 
@@ -32,8 +34,9 @@ class LintPullRequestCommand extends Command
         $data = json_decode(file_get_contents($input->getArgument('event_path')), true);
         $exit = 0;
 
-        if (!preg_match('/^[ |\t]*License[ |\t]+MIT[ |\t]*\r?$/mi', $data['pull_request']['body'])) {
-            $output->writeln('::error::Contributions must be licensed under MIT (add the pull request header in the description)');
+        $license = $input->getOption('license');
+        if ($license && !preg_match('/^[ |\t]*License[ |\t]+'.preg_quote($license).'[ |\t]*\r?$/mi', $data['pull_request']['body'])) {
+            $output->writeln('::error::Contributions must be licensed under '.$license.' (add the pull request header in the description)');
             $exit = 1;
         }
 
