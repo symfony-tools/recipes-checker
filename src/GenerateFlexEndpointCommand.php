@@ -98,6 +98,7 @@ class GenerateFlexEndpointCommand extends Command
                 'repository' => sprintf('github.com/%s', $repository),
                 'origin_template' => sprintf('{package}:{version}@github.com/%s:%s', $repository, $sourceBranch),
                 'recipe_template' => sprintf('https://raw.githubusercontent.com/%s/%s/{package_dotted}.{version}.json', $repository, $flexBranch),
+                'archived_recipes_template' => sprintf('https://raw.githubusercontent.com/%s/%s/archived/{package_dotted}/{ref}.json', $repository, $flexBranch)
             ],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
 
@@ -138,15 +139,26 @@ class GenerateFlexEndpointCommand extends Command
 
         ksort($files, \SORT_NATURAL);
 
-        file_put_contents(sprintf('%s/%s.%s.json', $outputDir, str_replace('/', '.', $package), $version), json_encode([
-            'manifests' => [
-                $package => [
-                    'manifest' => $manifest,
-                    'files' => $files,
-                    'ref' => $tree,
+        $contents = json_encode(
+            [
+                'manifests' => [
+                    $package => [
+                        'manifest' => $manifest,
+                        'files' => $files,
+                        'ref' => $tree,
+                    ],
                 ],
             ],
-        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
+        ) . "\n";
+        file_put_contents(sprintf('%s/%s.%s.json', $outputDir, str_replace('/', '.', $package), $version), $contents);
+
+        // save another version for the archives
+        $archivedPath = sprintf('%s/archived/%s.%s/%s.json', $outputDir, str_replace('/', '.', $package), $version, $tree);
+        if (!file_exists(dirname($archivedPath))) {
+            mkdir(dirname($archivedPath), 0777, true);
+        }
+        file_put_contents($archivedPath, $contents);
 
         return true;
     }
