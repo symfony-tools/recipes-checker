@@ -53,7 +53,7 @@ class DiffRecipeVersionsCommand extends Command
 
  1. Define the `SYMFONY_ENDPOINT` environment variable:
     ```sh
-    # On *nix and Mac
+    # On Unix-like (BSD, Linux and macOS)
     export SYMFONY_ENDPOINT={$endpoint}
     # On Windows
     SET SYMFONY_ENDPOINT={$endpoint}
@@ -67,7 +67,7 @@ class DiffRecipeVersionsCommand extends Command
 
  3. Don't forget to unset the `SYMFONY_ENDPOINT` environment variable when done:
     ```sh
-    # On *nix and Mac
+    # On Unix-like (BSD, Linux and macOS)
     unset SYMFONY_ENDPOINT
     # On Windows
     SET SYMFONY_ENDPOINT=
