@@ -153,7 +153,7 @@ class GenerateFlexEndpointCommand extends Command
         file_put_contents(sprintf('%s/%s.%s.json', $outputDir, str_replace('/', '.', $package), $version), $contents);
 
         // save another version for the archives
-        $archivedPath = sprintf('%s/archived/%s.%s/%s.json', $outputDir, str_replace('/', '.', $package), $version, $tree);
+        $archivedPath = sprintf('%s/archived/%s/%s.json', $outputDir, str_replace('/', '.', $package), $tree);
         if (!file_exists(\dirname($archivedPath))) {
             mkdir(\dirname($archivedPath), 0777, true);
         }
