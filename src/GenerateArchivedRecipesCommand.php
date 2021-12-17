@@ -50,6 +50,9 @@ class GenerateArchivedRecipesCommand extends Command
         $process->mustRun();
 
         $tmpDir = sys_get_temp_dir().'/_flex_archive/';
+        if (file_exists($tmpDir)) {
+            $filesystem->remove($tmpDir);
+        }
         $filesystem->mkdir($tmpDir);
 
         $process = (new Process(['git', 'rev-list', '--count', $branch, '--no-merges'], $recipesDirectory))->mustRun();
