@@ -17,10 +17,13 @@
         "ext-ctype": "*",
         "ext-intl": "*",
         "ext-mbstring": "*",
-        "symfony/console": "^5.3",
-        "symfony/http-client": "^5.3",
-        "symfony/runtime": "^5.3",
-        "symfony/yaml": "^5.3"
+        "symfony/console": "^5.4",
+        "symfony/filesystem": "^5.4",
+        "symfony/finder": "^5.4",
+        "symfony/http-client": "^5.4",
+        "symfony/process": "^5.4",
+        "symfony/runtime": "^5.4",
+        "symfony/yaml": "^5.4"
     },
     "require-dev": {
         "symfony/var-dumper": "^5.3"
