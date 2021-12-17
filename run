@@ -4,6 +4,7 @@
 require __DIR__.'/vendor/autoload_runtime.php';
 
 use App\DiffRecipeVersionsCommand;
+use App\GenerateArchivedRecipesCommand;
 use App\GenerateFlexEndpointCommand;
 use App\LintManifestsCommand;
 use App\LintPackagesCommand;
@@ -17,6 +18,7 @@ return function() {
 
     $app->add(new DiffRecipeVersionsCommand());
     $app->add(new GenerateFlexEndpointCommand());
+    $app->add(new GenerateArchivedRecipesCommand());
     $app->add(new LintManifestsCommand());
     $app->add(new LintPackagesCommand());
     $app->add(new LintPullRequestCommand());
