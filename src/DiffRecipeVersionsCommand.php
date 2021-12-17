@@ -30,13 +30,13 @@ class DiffRecipeVersionsCommand extends Command
         $packages = [];
         $requires = [];
 
-        while (false !== $package = fgets(STDIN)) {
+        while (false !== $package = fgets(\STDIN)) {
             $package = substr($package, 0, -1);
 
-            $versions = scandir($package, SCANDIR_SORT_NONE);
+            $versions = scandir($package, \SCANDIR_SORT_NONE);
             usort($versions, 'version_compare');
 
-            if (!$versions = array_slice($versions, 2)) {
+            if (!$versions = \array_slice($versions, 2)) {
                 continue;
             }
 
@@ -102,7 +102,7 @@ EOMD;
             foreach ($versions as $version) {
                 $diff = shell_exec(sprintf('LC_ALL=C git diff --color=never --no-index %s/%s %1$s/%s', $package, $previousVersion, $version));
 
-                $output->writeln("<details>");
+                $output->writeln('<details>');
                 $output->writeln(sprintf("<summary>%s <em>vs</em> %s</summary>\n", $previousVersion, $version));
                 $output->writeln("```diff\n$diff```");
                 $output->writeln("\n</details>\n");
