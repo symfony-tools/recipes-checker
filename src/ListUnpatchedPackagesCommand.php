@@ -34,7 +34,7 @@ class ListUnpatchedPackagesCommand extends Command
         $client = HttpClient::create();
         $diff = $client->request('GET', $data['pull_request']['diff_url'], ['auth_bearer' => $input->getArgument('github_token')])->getContent();
 
-        preg_match_all('{^diff --git a/(([^/]++/[^/]++)/.*) b/\1$}m', $diff, $matches, PREG_PATTERN_ORDER);
+        preg_match_all('{^diff --git a/(([^/]++/[^/]++)/.*) b/\1$}m', $diff, $matches, \PREG_PATTERN_ORDER);
 
         $patchedPackages = array_flip($matches[2]);
 

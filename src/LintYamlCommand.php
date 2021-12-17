@@ -24,7 +24,7 @@ class LintYamlCommand extends Command
     {
         $exit = 0;
 
-        while (false !== $file = fgets(STDIN)) {
+        while (false !== $file = fgets(\STDIN)) {
             $file = substr($file, 0, -1);
             $this->validate($file, $output, $exit);
         }
