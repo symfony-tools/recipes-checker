@@ -19,7 +19,6 @@
         "ext-mbstring": "*",
         "symfony/console": "^5.4",
         "symfony/filesystem": "^5.4",
-        "symfony/finder": "^5.4",
         "symfony/http-client": "^5.4",
         "symfony/process": "^5.4",
         "symfony/runtime": "^5.4",

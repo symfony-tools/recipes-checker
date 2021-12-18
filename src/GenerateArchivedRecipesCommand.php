@@ -16,7 +16,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 
 #[AsCommand(name: 'generate:archived-recipes', description: 'Generates an "archived" directory containing the history of every recipe.')]
@@ -42,10 +41,6 @@ class GenerateArchivedRecipesCommand extends Command
             throw new \InvalidArgumentException(sprintf('Cannot find directory "%s"', $recipesDirectory));
         }
 
-        if (!file_exists($outputDir)) {
-            $filesystem->mkdir($outputDir);
-        }
-
         $process = new Process(['git', 'checkout', $branch], $recipesDirectory);
         $process->mustRun();
 
@@ -68,28 +63,6 @@ class GenerateArchivedRecipesCommand extends Command
             // this WILL occasionally fail: some legacy recipes were invalid and pointed to non-existent files
             $process->run(null, ['OUTPUT_DIR' => $tmpDir]);
 
-            $finder = new Finder();
-            $finder->in($tmpDir.'/archived')
-                ->name('*.json')
-                ->notName('index.json');
-
-            foreach ($finder as $file) {
-                $data = json_decode($file->getContents(), true);
-                $manifests = array_values($data['manifests']);
-                $treeRef = $manifests[0]['ref'];
-
-                $parts = explode('.', $file->getRelativePathname());
-                $dottedPackageName = implode('.', [$parts[0], $parts[1]]);
-
-                $targetPath = sprintf('%s/%s/%s.json', $outputDir, $dottedPackageName, $treeRef);
-                if (!file_exists(\dirname($targetPath))) {
-                    $filesystem->mkdir(\dirname($targetPath));
-                }
-                if (!file_exists($targetPath)) {
-                    file_put_contents($targetPath, $file->getContents());
-                }
-            }
-
             $process = new Process(['git', 'checkout', 'HEAD^1'], $recipesDirectory);
             $process->mustRun();
 
@@ -102,6 +75,7 @@ class GenerateArchivedRecipesCommand extends Command
             $progress->setProgress($totalCommits - $newCount);
         }
 
+        $filesystem->mirror($tmpDir.'/archived', $outputDir);
         $progress->finish();
         $filesystem->remove($tmpDir);
 
