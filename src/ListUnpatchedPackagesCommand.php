@@ -32,7 +32,12 @@ class ListUnpatchedPackagesCommand extends Command
         $data = json_decode(file_get_contents($input->getArgument('event_path')), true);
 
         $client = HttpClient::create();
-        $diff = $client->request('GET', $data['pull_request']['diff_url'], ['auth_bearer' => $input->getArgument('github_token')])->getContent();
+        $diff = $client->request('GET', $data['pull_request']['url'],
+            [
+                'auth_bearer' => $input->getArgument('github_token'),
+                'headers' => ['Accept' => 'application/vnd.github.v3.diff'],
+            ]
+        )->getContent();
 
         preg_match_all('{^diff --git a/(([^/]++/[^/]++)/.*) b/\1$}m', $diff, $matches, \PREG_PATTERN_ORDER);
 
