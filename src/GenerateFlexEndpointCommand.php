@@ -110,7 +110,7 @@ class GenerateFlexEndpointCommand extends Command
 
         $files = [];
         $it = new \RecursiveDirectoryIterator($package.'/'.$version);
-        $it->setFlags($it::SKIP_DOTS | $it::FOLLOW_SYMLINKS);
+        $it->setFlags($it::SKIP_DOTS | $it::FOLLOW_SYMLINKS | $it::UNIX_PATHS);
 
         foreach (new \RecursiveIteratorIterator($it) as $path => $file) {
             $file = substr($path, 1 + \strlen($package.'/'.$version));
