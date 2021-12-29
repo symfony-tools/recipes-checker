@@ -109,11 +109,11 @@ class GenerateFlexEndpointCommand extends Command
         unset($manifest['aliases']);
 
         $files = [];
-        $it = new \RecursiveDirectoryIterator($package.'/'.$version);
+        $it = new \RecursiveDirectoryIterator($package.DIRECTORY_SEPARATOR.$version);
         $it->setFlags($it::SKIP_DOTS | $it::FOLLOW_SYMLINKS);
 
         foreach (new \RecursiveIteratorIterator($it) as $path => $file) {
-            $file = substr($path, 1 + \strlen($package.'/'.$version));
+            $file = substr($path, 1 + \strlen($package.DIRECTORY_SEPARATOR.$version));
             if (is_dir($path) || 'manifest.json' === $file) {
                 continue;
             }
@@ -126,7 +126,7 @@ class GenerateFlexEndpointCommand extends Command
                 continue;
             }
             $contents = file_get_contents($path);
-            $files[$file] = [
+            $files[str_ireplace('\\', '/', $file)] = [
                 'contents' => preg_match('//u', $contents) ? explode("\n", $contents) : base64_encode($contents),
                 'executable' => is_executable($path),
             ];
