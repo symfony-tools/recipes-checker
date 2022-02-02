@@ -27,6 +27,7 @@ class GenerateFlexEndpointCommand extends Command
             ->addArgument('output_directory', InputArgument::REQUIRED, 'The directory where generated files should be stored')
             ->addArgument('versions_json', InputArgument::OPTIONAL, 'The file where versions of Symfony are described')
             ->addOption('contrib')
+            ->addOption('private')
         ;
     }
 
@@ -38,6 +39,7 @@ class GenerateFlexEndpointCommand extends Command
         $outputDir = $input->getArgument('output_directory');
         $versionsJson = $input->getArgument('versions_json');
         $contrib = $input->getOption('contrib');
+        $private = $input->getOption('private');
 
         $aliases = $recipes = $recipeConflicts = $versions = [];
 
@@ -104,9 +106,9 @@ class GenerateFlexEndpointCommand extends Command
             '_links' => [
                 'repository' => sprintf('github.com/%s', $repository),
                 'origin_template' => sprintf('{package}:{version}@github.com/%s:%s', $repository, $sourceBranch),
-                'recipe_template' => sprintf('https://raw.githubusercontent.com/%s/%s/{package_dotted}.{version}.json', $repository, $flexBranch),
+                'recipe_template' => $this->getGitHubUrl('{package_dotted}.{version}.json', $repository, $flexBranch, $private),
                 'recipe_template_relative' => sprintf('{package_dotted}.{version}.json', $repository, $flexBranch),
-                'archived_recipes_template' => sprintf('https://raw.githubusercontent.com/%s/%s/archived/{package_dotted}/{ref}.json', $repository, $flexBranch),
+                'archived_recipes_template' => $this->getGitHubUrl('archived/{package_dotted}/{ref}.json', $repository, $flexBranch, $private),
                 'archived_recipes_template_relative' => sprintf('archived/{package_dotted}/{ref}.json', $repository, $flexBranch),
             ],
         ], \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES)."\n");
@@ -170,5 +172,14 @@ class GenerateFlexEndpointCommand extends Command
         file_put_contents($archivedPath, $contents);
 
         return true;
+    }
+
+    private function getGitHubUrl(string $path, string $repository, string $flexBranch, bool $private): string
+    {
+        if ($private) {
+            return sprintf('https://api.github.com/repos/%s/contents/%s?ref=%s', $repository, $path, $flexBranch);
+        }
+
+        return sprintf('https://raw.githubusercontent.com/%s/%s/%s', $repository, $flexBranch, $path);
     }
 }
