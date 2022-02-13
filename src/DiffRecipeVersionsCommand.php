@@ -14,6 +14,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
 
 #[AsCommand(name: 'diff-recipe-versions', description: 'Displays the diff between versions of a recipe')]
 class DiffRecipeVersionsCommand extends Command
@@ -100,11 +101,12 @@ EOMD;
             $output->writeln(sprintf("### %s\n", $package));
 
             foreach ($versions as $version) {
-                $diff = shell_exec(sprintf('LC_ALL=C git diff --color=never --no-index %s/%s %1$s/%s', $package, $previousVersion, $version));
+                $process = new Process(['git', 'diff', '--color=never', '--no-index', $package.'/'.$previousVersion, $package.'/'.$version]);
+                $process->mustRun(null, ['LC_ALL' =>'C']);
 
                 $output->writeln('<details>');
                 $output->writeln(sprintf("<summary>%s <em>vs</em> %s</summary>\n", $previousVersion, $version));
-                $output->writeln("```diff\n$diff```");
+                $output->writeln("```diff\n{$process->getOutput()}```");
                 $output->writeln("\n</details>\n");
 
                 $previousVersion = $version;
