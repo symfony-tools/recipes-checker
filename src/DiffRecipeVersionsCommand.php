@@ -102,7 +102,7 @@ EOMD;
 
             foreach ($versions as $version) {
                 $process = new Process(['git', 'diff', '--color=never', '--no-index', $package.'/'.$previousVersion, $package.'/'.$version]);
-                $process->mustRun(null, ['LC_ALL' =>'C']);
+                $process->run(null, ['LC_ALL' =>'C']);
 
                 $output->writeln('<details>');
                 $output->writeln(sprintf("<summary>%s <em>vs</em> %s</summary>\n", $previousVersion, $version));
