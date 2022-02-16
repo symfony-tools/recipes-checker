@@ -39,7 +39,7 @@ class GenerateFlexEndpointCommand extends Command
         $versionsJson = $input->getArgument('versions_json');
         $contrib = $input->getOption('contrib');
 
-        $aliases = $recipes = $versions = [];
+        $aliases = $recipes = $recipeConflicts = $versions = [];
 
         if ($versionsJson) {
             $versions = json_decode(file_get_contents($versionsJson), true);
@@ -81,15 +81,23 @@ class GenerateFlexEndpointCommand extends Command
             if ($this->generatePackageJson($package, $version, $manifest, $tree, $outputDir)) {
                 $recipes[$package][] = $version;
                 usort($recipes[$package], 'strnatcmp');
+
+                if (isset($manifest['conflict'])) {
+                    uksort($manifest['conflict'], 'strnatcmp');
+                    $recipeConflicts[$package][$version] = $manifest['conflict'];
+                    uksort($recipeConflicts[$package], 'strnatcmp');
+                }
             }
         }
 
         ksort($aliases, \SORT_NATURAL);
         ksort($recipes, \SORT_NATURAL);
+        ksort($recipeConflicts, \SORT_NATURAL);
 
         file_put_contents($outputDir.'/index.json', json_encode([
             'aliases' => $aliases,
             'recipes' => $recipes,
+            'recipe-conflicts' => $recipeConflicts,
             'versions' => $versions,
             'branch' => $sourceBranch,
             'is_contrib' => $contrib,
@@ -97,7 +105,9 @@ class GenerateFlexEndpointCommand extends Command
                 'repository' => sprintf('github.com/%s', $repository),
                 'origin_template' => sprintf('{package}:{version}@github.com/%s:%s', $repository, $sourceBranch),
                 'recipe_template' => sprintf('https://raw.githubusercontent.com/%s/%s/{package_dotted}.{version}.json', $repository, $flexBranch),
+                'recipe_template_relative' => sprintf('{package_dotted}.{version}.json', $repository, $flexBranch),
                 'archived_recipes_template' => sprintf('https://raw.githubusercontent.com/%s/%s/archived/{package_dotted}/{ref}.json', $repository, $flexBranch),
+                'archived_recipes_template_relative' => sprintf('archived/{package_dotted}/{ref}.json', $repository, $flexBranch),
             ],
         ], \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES)."\n");
 
