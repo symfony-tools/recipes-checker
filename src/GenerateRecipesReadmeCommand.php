@@ -22,18 +22,18 @@ class GenerateRecipesReadmeCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('indexPath', InputArgument::REQUIRED, 'Path to the local index.json')
+            ->addArgument('index_path', InputArgument::REQUIRED, 'Path to the local index.json')
             ->addOption('contrib', null, InputOption::VALUE_NONE, 'Is this the contrib repository?')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $indexPath = $input->getArgument('indexPath');
+        $indexPath = $input->getArgument('index_path');
         $isContrib = $input->getOption('contrib');
 
         if (!file_exists($indexPath)) {
-            throw new \InvalidArgumentException(sprintf('Cannot find index JSON file "%s"', $indexPath));
+            throw new \InvalidArgumentException(sprintf('Cannot find index JSON file "%s".', $indexPath));
         }
 
         $data = json_decode(file_get_contents($indexPath), true);
@@ -53,13 +53,13 @@ class GenerateRecipesReadmeCommand extends Command
 
         // Package | Latest recipe | Aliases
         // [symfony/framework-bundle](https://packagist) | [5.4](github.com/.../) | framework-bundle
-        $contentLines[] = '| Package | Latest Recipe |' . ($hasAliases ? ' Aliases |' : '');
-        $contentLines[] = '| --- | --- |' . ($hasAliases ? ' --- |' : '');
+        $contentLines[] = '| Package | Latest Recipe |'.($hasAliases ? ' Aliases |' : '');
+        $contentLines[] = '| --- | --- |'.($hasAliases ? ' --- |' : '');
         foreach ($data['recipes'] as $package => $versions) {
             $latestVersion = array_pop($versions);
             $line = sprintf('| [%s](https://packagist.org/packages/%s) | [%s](%s/%s) |', $package, $package, $latestVersion, $package, $latestVersion);
             if ($hasAliases) {
-                $styledAliases = array_map(function($alias) {
+                $styledAliases = array_map(function ($alias) {
                     return sprintf('`%s`', $alias);
                 }, $aliases[$package] ?? []);
                 $line .= sprintf(' %s |', implode(', ', $styledAliases));
