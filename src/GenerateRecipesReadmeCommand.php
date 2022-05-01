@@ -45,9 +45,9 @@ class GenerateRecipesReadmeCommand extends Command
         $contentLines[] = '# List of Recipes';
         $contentLines[] = '';
         if ($isContrib) {
-            $contentLines[] = 'Additional recipes can be found on the [Main Recipes Repository](https://github.com/symfony/recipes/blob/master/RECIPES.md)';
+            $contentLines[] = 'Additional recipes can be found on the [Main Recipes Repository](https://github.com/symfony/recipes/blob/flex/main/RECIPES.md)';
         } else {
-            $contentLines[] = 'Additional recipes can be found on the [Contrib Recipes Repository](https://github.com/symfony/recipes-contrib/blob/master/RECIPES.md)';
+            $contentLines[] = 'Additional recipes can be found on the [Contrib Recipes Repository](https://github.com/symfony/recipes-contrib/blob/flex/main/RECIPES.md)';
         }
         $contentLines[] = '';
 
