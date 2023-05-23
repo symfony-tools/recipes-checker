@@ -31,6 +31,7 @@ class LintManifestsCommand extends Command
         'conflict' => 0,
         'dockerfile' => 0,
         'docker-compose' => 0,
+        'add-lines' => 0,
     ];
 
     private const SPECIAL_FILES = ['.', '..', 'manifest.json', 'post-install.txt', 'Makefile'];
@@ -84,6 +85,12 @@ class LintManifestsCommand extends Command
                 }
             }
 
+            if (isset($data['add-lines'])) {
+                if (!$this->isAddLinesValid($data['add-lines'], $manifest, $output)) {
+                    $exit = 1;
+                }
+            }
+
             if ($extraKeys = array_diff_key($data, self::ALLOWED_KEYS)) {
                 $extraKeys = array_keys($extraKeys);
                 $lastKey = array_pop($extraKeys);
@@ -121,5 +128,55 @@ class LintManifestsCommand extends Command
         }
 
         return $exit;
+    }
+
+    private function isAddLinesValid(mixed $data, string $manifest, OutputInterface $output)
+    {
+        if (!is_array($data)) {
+            $output->writeln(sprintf('::error file=%s::"add-lines" must be an array', $manifest));
+
+            return false;
+        }
+
+        $isValid = true;
+        foreach ($data as $index => $addLine) {
+            foreach (['file', 'content', 'position'] as $key) {
+                if (!isset($addLine[$key])) {
+                    $output->writeln(sprintf('::error file=%s::"add-lines" (index %d) must have a "%s" key', $manifest, $index, $key));
+                    $isValid = false;
+
+                    continue;
+                }
+
+                if (!is_string($addLine[$key])) {
+                    $output->writeln(sprintf('::error file=%s::"add-lines" (index %d) has a "%s" key but it must be a string value', $manifest, $index, $key));
+
+                    $isValid = false;
+                }
+            }
+
+            if (isset($addLine['position'])) {
+                $validPositions = ['top', 'bottom', 'after_target'];
+                if (!\in_array($addLine['position'], $validPositions, true)) {
+                    $output->writeln(sprintf('::error file=%s::"add-lines" (index %d) must have a "position" key with one of the following values: "%s"', $manifest, $index, implode('", "', $validPositions)));
+
+                    $isValid = false;
+                }
+
+                if ('after_target' === $addLine['position']) {
+                    if (!isset($addLine['target'])) {
+                        $output->writeln(sprintf('::error file=%s::"add-lines" (index %d) must have a "target" key when "position" is "after_target"', $manifest, $index));
+
+                        $isValid = false;
+                    } elseif (!is_string($addLine['target'])) {
+                        $output->writeln(sprintf('::error file=%s::"add-lines" (index %d) has a "target" key but it must be a string value', $manifest, $index));
+
+                        $isValid = false;
+                    }
+                }
+            }
+        }
+
+        return $isValid;
     }
 }
