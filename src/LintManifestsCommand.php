@@ -22,6 +22,7 @@ class LintManifestsCommand extends Command
         'copy-from-recipe' => 0,
         'copy-from-package' => 0,
         'composer-scripts' => 0,
+        'dotenv' => 0,
         'env' => 0,
         'makefile' => 0,
         'gitignore' => 0,
