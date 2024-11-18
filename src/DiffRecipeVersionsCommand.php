@@ -62,7 +62,7 @@ class DiffRecipeVersionsCommand extends Command
 
  2. Install the package(s) related to this recipe:
     ```sh
-    composer req 'symfony/flex:^1.16'
+    composer req symfony/flex
     composer req {$requires}
     ```
 
