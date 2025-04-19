@@ -140,6 +140,8 @@ class LintManifestsCommand extends Command
         }
 
         $isValid = true;
+        $targetPerContent = [];
+
         foreach ($data as $index => $addLine) {
             foreach (['file', 'content', 'position'] as $key) {
                 if (!isset($addLine[$key])) {
@@ -174,6 +176,18 @@ class LintManifestsCommand extends Command
 
                         $isValid = false;
                     }
+                }
+
+                $targetPerContent[$addLine['file']][$addLine['content']][] = $addLine['target'];
+            }
+        }
+
+        foreach ($targetPerContent as $file => $filedTargets) {
+            foreach ($filedTargets as $targets) {
+                if (count($targets) > 1) {
+                    $output->writeln(sprintf('::error file=%s::"add-lines" has the same content for the same file "%s" multiple times for different targets "%s". Only the first one would be applied', $manifest, $file, implode('", "', $targets)));
+
+                    $isValid = false;
                 }
             }
         }
