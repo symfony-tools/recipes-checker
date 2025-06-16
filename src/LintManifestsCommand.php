@@ -149,7 +149,24 @@ class LintManifestsCommand extends Command
                     continue;
                 }
 
-                if (!is_string($addLine[$key])) {
+                if ('content' === $key) {
+                    if (!is_string($addLine[$key]) && !is_array($addLine[$key])) {
+                        $output->writeln(sprintf('::error file=%s::"add-lines" (index %d) has a "%s" key but it must be a string or an array of strings', $manifest, $index, $key));
+                        $isValid = false;
+                        
+                        continue;
+                    }
+
+                    if (is_array($addLine[$key])) {
+                        foreach ($addLine[$key] as $lineIndex => $line) {
+                            if (!is_string($line)) {
+                                $output->writeln(sprintf('::error file=%s::"add-lines" (index %d) has a "%s" array but element at index %d is not a string', $manifest, $index, $key, $lineIndex));
+                                
+                                $isValid = false;
+                            }
+                        }
+                    }
+                } elseif (!is_string($addLine[$key])) {
                     $output->writeln(sprintf('::error file=%s::"add-lines" (index %d) has a "%s" key but it must be a string value', $manifest, $index, $key));
 
                     $isValid = false;
