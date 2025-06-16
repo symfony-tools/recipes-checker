@@ -123,6 +123,14 @@ class GenerateFlexEndpointCommand extends Command
     {
         unset($manifest['aliases']);
 
+        if (isset($manifest['add-lines']) && is_array($manifest['add-lines'])) {
+            foreach ($manifest['add-lines'] as $i => $config) {
+                if (isset($config['content']) && is_array($config['content'])) {
+                    $manifest['add-lines'][$i]['content'] = implode("\n", $config['content']);
+                }
+            }
+        }
+
         $files = [];
         $it = new \RecursiveDirectoryIterator($package.'/'.$version);
         $it->setFlags($it::SKIP_DOTS | $it::FOLLOW_SYMLINKS | $it::UNIX_PATHS);
