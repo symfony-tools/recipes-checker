@@ -57,7 +57,7 @@ class GenerateRecipesReadmeCommand extends Command
         $contentLines[] = '| --- | --- |'.($hasAliases ? ' --- |' : '');
         foreach ($data['recipes'] as $package => $versions) {
             $latestVersion = array_pop($versions);
-            $line = sprintf('| [%s](https://packagist.org/packages/%s) | [%s](%s/%s) |', $package, $package, $latestVersion, $package, $latestVersion);
+            $line = sprintf('| [%s](https://packagist.org/packages/%s) | [%s](../../../tree/main/%s/%s) |', $package, $package, $latestVersion, $package, $latestVersion);
             if ($hasAliases) {
                 $styledAliases = array_map(function ($alias) {
                     return sprintf('`%s`', $alias);
