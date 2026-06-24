@@ -25,13 +25,13 @@ class LintPackagesCommand extends Command
         $packages = [];
 
         foreach (glob('*/*') as $package) {
-            $packages[] = [false, $package, $client->request('GET', "https://repo.packagist.org/p2/{$package}.json")];
+            $packages[] = [false, $package, null, $client->request('GET', "https://repo.packagist.org/p2/{$package}.json")];
         }
 
         $exit = 0;
 
         for ($i = 0; isset($packages[$i]); ++$i) {
-            [$dev, $package, $response] = $packages[$i];
+            [$dev, $package, $onlyVersion, $response] = $packages[$i];
             unset($packages[$i]);
 
             if (200 !== $response->getStatusCode()) {
@@ -46,6 +46,10 @@ class LintPackagesCommand extends Command
 
             foreach (glob("$package/*") as $version) {
                 $version = substr($version, 1 + \strlen($package));
+
+                if (null !== $onlyVersion && $version !== $onlyVersion) {
+                    continue;
+                }
 
                 if (!preg_match('/^\d+\.\d+$/D', $version)) {
                     $output->writeln(sprintf('::error::Version "%s" is not valid, format is "x.y" where x and y are numbers for "%s"', $version, $package));
@@ -76,7 +80,7 @@ class LintPackagesCommand extends Command
                         if (!$packages) {
                             $i = -1;
                         }
-                        $packages[] = [true, $package, $client->request('GET', "https://repo.packagist.org/p2/{$package}~dev.json")];
+                        $packages[] = [true, $package, $version, $client->request('GET', "https://repo.packagist.org/p2/{$package}~dev.json")];
                     }
 
                     continue;
