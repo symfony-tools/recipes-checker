@@ -13,20 +13,25 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 #[AsCommand(name: 'generate:flex-endpoint', description: 'Generates the json files required by Flex')]
 class GenerateFlexEndpointCommand extends Command
 {
+    private const PROVIDER_GITHUB = 'github';
+    private const PROVIDER_GITLAB = 'gitlab';
+
     protected function configure(): void
     {
         $this
-            ->addArgument('repository', InputArgument::REQUIRED, 'The name of the GitHub repository')
+            ->addArgument('repository', InputArgument::REQUIRED, 'The name of the repository')
             ->addArgument('source_branch', InputArgument::REQUIRED, 'The source branch of recipes')
             ->addArgument('flex_branch', InputArgument::REQUIRED, 'The branch of the target Flex endpoint')
             ->addArgument('output_directory', InputArgument::REQUIRED, 'The directory where generated files should be stored')
             ->addArgument('versions_json', InputArgument::OPTIONAL, 'The file where versions of Symfony are described')
             ->addOption('contrib')
+            ->addOption('provider', null, InputOption::VALUE_REQUIRED, 'Provider of the repository (github or gitlab)', self::PROVIDER_GITHUB, [self::PROVIDER_GITHUB, self::PROVIDER_GITLAB])
         ;
     }
 
@@ -38,6 +43,7 @@ class GenerateFlexEndpointCommand extends Command
         $outputDir = $input->getArgument('output_directory');
         $versionsJson = $input->getArgument('versions_json');
         $contrib = $input->getOption('contrib');
+        $provider = $input->getOption('provider');
 
         $aliases = $recipes = $recipeConflicts = $versions = [];
 
@@ -99,6 +105,25 @@ class GenerateFlexEndpointCommand extends Command
         ksort($recipes, \SORT_NATURAL);
         ksort($recipeConflicts, \SORT_NATURAL);
 
+        switch ($provider) {
+            case self::PROVIDER_GITHUB:
+                $baseHost = 'github.com';
+                $recipeTemplate = sprintf('https://raw.githubusercontent.com/%s/%s/{package_dotted}.{version}.json', $repository, $flexBranch);
+                $archivedRecipesTemplate = sprintf('https://raw.githubusercontent.com/%s/%s/archived/{package_dotted}/{ref}.json', $repository, $flexBranch);
+                $recipeTemplateRelative = '{package_dotted}.{version}.json';
+                $archivedRecipesTemplateRelative = 'archived/{package_dotted}/{ref}.json';
+                break;
+            case self::PROVIDER_GITLAB:
+                $baseHost = 'gitlab.com';
+                $recipeTemplate = sprintf('https://gitlab.com/api/v4/projects/%s/repository/files/{package_dotted}.{version}.json/raw?ref=%s', urlencode($repository), $flexBranch);
+                $archivedRecipesTemplate = sprintf('https://gitlab.com/api/v4/projects/%s/repository/files/archived%%2F{package_dotted}%%2F{ref}.json/raw?ref=%s', urlencode($repository), $flexBranch);
+                // Flex resolves relative templates by replacing the last path segment of the endpoint, which is "raw" on GitLab
+                $recipeTemplateRelative = $archivedRecipesTemplateRelative = null;
+                break;
+            default:
+                throw new \InvalidArgumentException(sprintf('Unsupported provider "%s".', $provider));
+        }
+
         file_put_contents($outputDir.'/index.json', json_encode([
             'aliases' => $aliases,
             'recipes' => $recipes,
@@ -106,14 +131,14 @@ class GenerateFlexEndpointCommand extends Command
             'versions' => $versions,
             'branch' => $sourceBranch,
             'is_contrib' => $contrib,
-            '_links' => [
-                'repository' => sprintf('github.com/%s', $repository),
-                'origin_template' => sprintf('{package}:{version}@github.com/%s:%s', $repository, $sourceBranch),
-                'recipe_template' => sprintf('https://raw.githubusercontent.com/%s/%s/{package_dotted}.{version}.json', $repository, $flexBranch),
-                'recipe_template_relative' => sprintf('{package_dotted}.{version}.json', $repository, $flexBranch),
-                'archived_recipes_template' => sprintf('https://raw.githubusercontent.com/%s/%s/archived/{package_dotted}/{ref}.json', $repository, $flexBranch),
-                'archived_recipes_template_relative' => sprintf('archived/{package_dotted}/{ref}.json', $repository, $flexBranch),
-            ],
+            '_links' => array_filter([
+                'repository' => sprintf('%s/%s', $baseHost, $repository),
+                'origin_template' => sprintf('{package}:{version}@%s/%s:%s', $baseHost, $repository, $sourceBranch),
+                'recipe_template' => $recipeTemplate,
+                'recipe_template_relative' => $recipeTemplateRelative,
+                'archived_recipes_template' => $archivedRecipesTemplate,
+                'archived_recipes_template_relative' => $archivedRecipesTemplateRelative,
+            ]),
         ], \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES)."\n");
 
         return 0;
