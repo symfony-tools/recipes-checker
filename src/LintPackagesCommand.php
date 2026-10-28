@@ -77,9 +77,6 @@ class LintPackagesCommand extends Command
                         $output->writeln(sprintf('::error::Version "%s" of "%s" does not exist on Packagist', $version, $package));
                         $exit = 1;
                     } else {
-                        if (!$packages) {
-                            $i = -1;
-                        }
                         $packages[] = [true, $package, $version, $client->request('GET', "https://repo.packagist.org/p2/{$package}~dev.json")];
                     }
 
