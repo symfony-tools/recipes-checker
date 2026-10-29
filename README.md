@@ -40,4 +40,5 @@ Commands
 | `diff-recipe-versions`      | Displays the diff between versions of a recipe
 | `generate:flex-endpoint`    | Generates the JSON files required by Flex from `git ls-tree HEAD */*/*`
 | `generate:archived-recipes` | Generates the history of every recipe
+| `generate:create-project-matrix` | Generates the matrix of skeletons and PHP versions that can install the packages listed on stdin
 | `generate:recipes-readme`   | Generates the list of all recipes
