@@ -23,6 +23,7 @@ class DiffRecipeVersionsCommand extends Command
     {
         $this
             ->addArgument('endpoint', InputArgument::OPTIONAL, 'The Flex endpoint', '')
+            ->addArgument('supported_versions', InputArgument::OPTIONAL, 'The file with the Markdown table of the supported versions, as written by generate:create-project-matrix', '')
         ;
     }
 
@@ -77,10 +78,12 @@ class DiffRecipeVersionsCommand extends Command
 EOMD;
         }
 
+        $supportedVersions = is_file($file = $input->getArgument('supported_versions')) ? file_get_contents($file) : '';
+
         $head = <<<EOMD
 Thanks for the PR 😍
 {$endpoint}
-## Diff between recipe versions
+{$supportedVersions}## Diff between recipe versions
 
 In order to help with the review stage, I'm in charge of computing the diff between the various versions of patched recipes.
 I'm going keep this comment up to date with any updates of the attached patch.
